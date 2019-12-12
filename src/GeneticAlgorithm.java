@@ -11,13 +11,6 @@ import org.jfugue.player.Player;
  * @author Hamish Dickson
  */
 class GeneticAlgorithm {
-    private int currGeneration = 0;
-    private int maxGenerations;
-
-    private final int POPULATION_SIZE = 5;
-    private final int SOLUTION_LENGTH = 10;
-    private final int POSSIBLE_NOTES = 7;
-
     private final Map<Integer, String> notes = new HashMap<>() {{
         put(1, "C#");
         put(2, "D");
@@ -27,6 +20,14 @@ class GeneticAlgorithm {
         put(6, "A");
         put(7, "B");
     }};
+
+    private int currGeneration = 0;
+    private int maxGenerations;
+
+    private final int POPULATION_SIZE = 5;
+    private final int SOLUTION_LENGTH = 10;
+    private final int POSSIBLE_NOTES = notes.size();
+
 
     /**
      * Constructor for the genetic algorithm
@@ -105,10 +106,30 @@ class GeneticAlgorithm {
     }
 
     private ArrayList<String> selection(Map<String, Double> population) {
+        ArrayList<String> newPopulation = new ArrayList<>();
         //TODO implement selection of population
+        for (int i = 0; i < population.size()-1; i++) {
+            newPopulation.add(tournament(population, i, i + 1));
+        }
 
+        System.out.println(newPopulation);
 
-        return null;
+        return newPopulation;
+    }
+
+    private String tournament(Map<String, Double> population, int firstCandidate, int secondCandidate) {
+        String victor = "";
+        Object[] solutions = population.keySet().toArray();
+
+        int randomInt = new Random().nextInt(100);
+
+        if (population.get(solutions[firstCandidate]) > population.get(solutions[secondCandidate]) && randomInt < 75) {
+            victor = (String) solutions[firstCandidate];
+        } else {
+            victor = (String) solutions[secondCandidate];
+        }
+
+        return victor;
     }
 
     /**
