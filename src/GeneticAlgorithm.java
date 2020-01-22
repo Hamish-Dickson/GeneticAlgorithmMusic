@@ -24,7 +24,7 @@ class GeneticAlgorithm {
     private int currGeneration = 0;
     private int maxGenerations;
 
-    private final int POPULATION_SIZE = 5;
+    private final int POPULATION_SIZE = 50;
     private final int SOLUTION_LENGTH = 10;
     private final int POSSIBLE_NOTES = notes.size();
 
@@ -55,9 +55,10 @@ class GeneticAlgorithm {
             crossover(population);
             mutation(population);
             currGeneration++;
+            System.out.println("Scored Population: " + scoredPopulation);
         }
-        System.out.println("The Weighted Population: " + scoredPopulation);
-        System.out.println("The Elite Candidate: " + eliteCandidate);
+        //System.out.println("The Weighted Population: " + scoredPopulation);
+        //System.out.println("The Elite Candidate: " + eliteCandidate);
         //playSolution(population);
     }
 
@@ -105,18 +106,31 @@ class GeneticAlgorithm {
         //TODO implement crossover operator
     }
 
+    /**
+     * implements the selection operator
+     *
+     * @param population the current weighted population
+     * @return the new population to be used for crossover
+     */
     private ArrayList<String> selection(Map<String, Double> population) {
         ArrayList<String> newPopulation = new ArrayList<>();
+
         //TODO implement selection of population
-        for (int i = 0; i < population.size()-1; i++) {
+        for (int i = 0; i < population.size() - 1; i++) {
             newPopulation.add(tournament(population, i, i + 1));
         }
-
-        System.out.println(newPopulation);
 
         return newPopulation;
     }
 
+    /**
+     * implementation of a tournament selection
+     *
+     * @param population
+     * @param firstCandidate
+     * @param secondCandidate
+     * @return
+     */
     private String tournament(Map<String, Double> population, int firstCandidate, int secondCandidate) {
         String victor = "";
         Object[] solutions = population.keySet().toArray();
