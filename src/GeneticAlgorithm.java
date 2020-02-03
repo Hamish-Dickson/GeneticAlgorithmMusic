@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import org.jfugue.player.Player;
 
@@ -24,7 +21,7 @@ class GeneticAlgorithm {
     private int currGeneration = 0;
     private int maxGenerations;
 
-    private final int POPULATION_SIZE = 5;
+    private final int POPULATION_SIZE = 6;
     private final int SOLUTION_LENGTH = 10;
     private final int POSSIBLE_NOTES = notes.size();
 
@@ -51,7 +48,7 @@ class GeneticAlgorithm {
             eliteCandidate = elitism(scoredPopulation);
             population = selection(scoredPopulation);
             population = crossover(population);
-            mutation(population);
+            population = mutation(population);
             population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
             System.out.println("Scored Population: " + scoredPopulation);
@@ -62,8 +59,9 @@ class GeneticAlgorithm {
     }
 
     private ArrayList<String> consolidatePopulation(ArrayList<String> population, String eliteCandidate) {
-        population.add(eliteCandidate);
-        return population;
+        ArrayList<String> newPopulation = new ArrayList<>(population);
+        newPopulation.add(eliteCandidate);
+        return newPopulation;
     }
 
     /**
@@ -126,8 +124,55 @@ class GeneticAlgorithm {
         return newPopulation;
     }
 
-    private void mutation(ArrayList<String> population) {
-        //TODO implement mutation operator
+    private ArrayList<String> mutation(ArrayList<String> population) {
+        ArrayList<String> newPopulation = new ArrayList<>();
+
+        for (String member : population) {
+            newPopulation.add(augment(member));
+        }
+
+        return population;
+    }
+
+    private String augment(String solution) {
+        StringBuilder mutatedSolution = new StringBuilder();
+
+        Random random = new Random();
+        int posToChange = random.nextInt(solution.split(" ").length);
+        boolean increase = random.nextBoolean();
+
+        String[] solutionNotes = solution.split(" ");
+        String noteToAugment = solutionNotes[posToChange];
+        Integer keyToAugment = 0;
+
+
+        for (Integer key : notes.keySet()) {
+            if (notes.get(key).equals(noteToAugment)) {
+                keyToAugment = key;
+            }
+        }
+
+        if (increase) {
+            if (keyToAugment == notes.size()) {
+                keyToAugment = 0;
+            } else {
+                keyToAugment++;
+            }
+        } else {
+            if (keyToAugment == 0) {
+                keyToAugment = notes.size();
+            } else {
+                keyToAugment--;
+            }
+        }
+
+        solutionNotes[posToChange] = notes.get(keyToAugment);
+
+        for (String solutionNote : solutionNotes) {
+            mutatedSolution.append(solutionNote).append(" ");
+        }
+
+        return mutatedSolution.toString();
     }
 
 
