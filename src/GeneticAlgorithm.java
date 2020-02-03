@@ -55,7 +55,7 @@ class GeneticAlgorithm {
         }
         //System.out.println("The Weighted Population: " + scoredPopulation);
         //System.out.println("The Elite Candidate: " + eliteCandidate);
-        //playSolution(population);
+        playSolution(population);
     }
 
     private ArrayList<String> consolidatePopulation(ArrayList<String> population, String eliteCandidate) {
@@ -97,7 +97,7 @@ class GeneticAlgorithm {
         Player player = new Player();
         player.play(solution);
         //player.play("CmajQ AmajQ BmajQ BmajQ AmajQ GmajQ EmajQ DmajQ");
-        //player.play("V0 [] D4q F4q G4q. | D4i Ri F4i Ri Ab4i G4h | D4q F4q G4q. | F4i D4qh.");
+        //player.play("V0 I[Piano] D4q F4q G4q. | D4i Ri F4i Ri Ab4i G4h | D4q F4q G4q. | F4i D4qh.");
     }
 
     private ArrayList<String> crossover(ArrayList<String> population) {
@@ -131,7 +131,7 @@ class GeneticAlgorithm {
             newPopulation.add(augment(member));
         }
 
-        return population;
+        return newPopulation;
     }
 
     private String augment(String solution) {
@@ -143,7 +143,7 @@ class GeneticAlgorithm {
 
         String[] solutionNotes = solution.split(" ");
         String noteToAugment = solutionNotes[posToChange];
-        Integer keyToAugment = 0;
+        Integer keyToAugment = 1;
 
 
         for (Integer key : notes.keySet()) {
@@ -154,12 +154,12 @@ class GeneticAlgorithm {
 
         if (increase) {
             if (keyToAugment == notes.size()) {
-                keyToAugment = 0;
+                keyToAugment = 1;
             } else {
                 keyToAugment++;
             }
         } else {
-            if (keyToAugment == 0) {
+            if (keyToAugment == 1) {
                 keyToAugment = notes.size();
             } else {
                 keyToAugment--;
