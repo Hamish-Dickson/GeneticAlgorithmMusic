@@ -24,7 +24,7 @@ class GeneticAlgorithm {
     private int currGeneration = 0;
     private int maxGenerations;
 
-    private final int POPULATION_SIZE = 50;
+    private final int POPULATION_SIZE = 5;
     private final int SOLUTION_LENGTH = 10;
     private final int POSSIBLE_NOTES = notes.size();
 
@@ -47,19 +47,23 @@ class GeneticAlgorithm {
         String eliteCandidate = "";
 
         while (currGeneration < maxGenerations) {
-            if (population != null) {
-                scoredPopulation = evaluatePopulation(population);
-            }
+            scoredPopulation = evaluatePopulation(population);
             eliteCandidate = elitism(scoredPopulation);
             population = selection(scoredPopulation);
-            crossover(population);
+            population = crossover(population);
             mutation(population);
+            population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
             System.out.println("Scored Population: " + scoredPopulation);
         }
         //System.out.println("The Weighted Population: " + scoredPopulation);
         //System.out.println("The Elite Candidate: " + eliteCandidate);
         //playSolution(population);
+    }
+
+    private ArrayList<String> consolidatePopulation(ArrayList<String> population, String eliteCandidate) {
+        population.add(eliteCandidate);
+        return population;
     }
 
     /**
@@ -98,13 +102,35 @@ class GeneticAlgorithm {
         //player.play("V0 [] D4q F4q G4q. | D4i Ri F4i Ri Ab4i G4h | D4q F4q G4q. | F4i D4qh.");
     }
 
+    private ArrayList<String> crossover(ArrayList<String> population) {
+        //TODO implement crossover operator
+        ArrayList<String> newPopulation = new ArrayList<>();
+
+        for (int i = 0; i < population.size() - 1; i += 2) {
+            StringBuilder firstCandidate = new StringBuilder(), secondCandidate = new StringBuilder();
+            String[] firstNotes = population.get(i).split(" ");
+            String[] secondNotes = population.get(i + 1).split(" ");
+
+            for (int j = 0; j < firstNotes.length; j++) {
+                if (j > firstNotes.length / 2) {
+                    firstCandidate.append(firstNotes[j]).append(" ");
+                    secondCandidate.append(secondNotes[j]).append(" ");
+                } else {
+                    firstCandidate.append(secondNotes[j]).append(" ");
+                    secondCandidate.append(firstNotes[j]).append(" ");
+                }
+            }
+
+            newPopulation.add(firstCandidate.toString());
+            newPopulation.add(secondCandidate.toString());
+        }
+        return newPopulation;
+    }
+
     private void mutation(ArrayList<String> population) {
         //TODO implement mutation operator
     }
 
-    private void crossover(ArrayList<String> population) {
-        //TODO implement crossover operator
-    }
 
     /**
      * implements the selection operator
