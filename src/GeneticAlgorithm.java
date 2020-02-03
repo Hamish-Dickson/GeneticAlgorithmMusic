@@ -103,7 +103,6 @@ class GeneticAlgorithm {
     }
 
     private ArrayList<String> crossover(ArrayList<String> population) {
-        //TODO implement crossover operator
         ArrayList<String> newPopulation = new ArrayList<>();
 
         for (int i = 0; i < population.size() - 1; i += 2) {
