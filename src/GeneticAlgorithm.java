@@ -51,11 +51,36 @@ class GeneticAlgorithm {
             population = mutation(population);
             population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
-            System.out.println("Scored Population: " + scoredPopulation);
+            System.out.println("Scored Population: " + scoredPopulation + " Size: " + scoredPopulation.size() + " Generation: " + currGeneration);
         }
         //System.out.println("The Weighted Population: " + scoredPopulation);
         //System.out.println("The Elite Candidate: " + eliteCandidate);
         playSolution(population);
+    }
+
+    private double entropy(String solution) {
+        double entropy = 0.0;
+
+        String[] solutionNotes = solution.split(" ");
+
+        for (int i = 0; i < solutionNotes.length - 1; i++) {
+            String firstNote = solutionNotes[i];
+            String secondNote = solutionNotes[i + 1];
+            int firstKey = 0, secondKey = 0;
+
+            for (Integer key : notes.keySet()) {
+                if (firstNote.equals(notes.get(key))) {
+                    firstKey = key;
+                }
+                if (secondNote.equals(notes.get(key))) {
+                    secondKey = key;
+                }
+            }
+
+            entropy += Math.abs(firstKey - secondKey);
+        }
+
+        return entropy;
     }
 
     private ArrayList<String> consolidatePopulation(ArrayList<String> population, String eliteCandidate) {
@@ -145,7 +170,6 @@ class GeneticAlgorithm {
         String noteToAugment = solutionNotes[posToChange];
         Integer keyToAugment = 1;
 
-
         for (Integer key : notes.keySet()) {
             if (notes.get(key).equals(noteToAugment)) {
                 keyToAugment = key;
@@ -228,7 +252,7 @@ class GeneticAlgorithm {
 
         //test scoring system so i can develop rest of GA
         for (int i = 0; i < population.size(); i++) {
-            scoredPopulation.put(population.get(i), (double) i);
+            scoredPopulation.put(population.get(i), entropy(population.get(i)));
         }
 
         return scoredPopulation;
@@ -257,13 +281,13 @@ class GeneticAlgorithm {
     private String generateSolution() {
         StringBuilder solution = new StringBuilder();
         Random random = new Random();
-        System.out.println("Notes available: " + notes.values());
+        //System.out.println("Notes available: " + notes.values());
         for (int i = 0; i < SOLUTION_LENGTH; i++) {
             int noteSelector = random.nextInt(POSSIBLE_NOTES) + 1;
             solution.append(notes.get(noteSelector)).append(" ");
         }
 
-        System.out.println(solution.toString());
+        //System.out.println(solution.toString());
         return solution.toString();
     }
 }
