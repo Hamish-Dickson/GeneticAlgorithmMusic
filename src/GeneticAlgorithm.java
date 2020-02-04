@@ -25,6 +25,9 @@ class GeneticAlgorithm {
     private final int SOLUTION_LENGTH = 10;
     private final int POSSIBLE_NOTES = notes.size();
 
+    private final double EVALUATION_WEIGHT = 0.7;
+    private final double ENTROPY_WEIGHT = 0.3;
+
 
     /**
      * Constructor for the genetic algorithm
@@ -52,12 +55,30 @@ class GeneticAlgorithm {
             population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
             System.out.println("Scored Population: " + scoredPopulation + " Size: " + scoredPopulation.size() + " Generation: " + currGeneration);
+            System.out.println("The Elite Candidate: " + eliteCandidate + " " + population.contains(eliteCandidate));
+
         }
         //System.out.println("The Weighted Population: " + scoredPopulation);
-        //System.out.println("The Elite Candidate: " + eliteCandidate);
-        playSolution(population);
+        //playSolution(population);
     }
 
+    /**
+     * weights the evaluation according to the weightings defined
+     *
+     * @param evaluation the evaluation score
+     * @param entropy the entropy score
+     * @return the weighted score
+     */
+    private double weightedScore(double evaluation, double entropy) {
+        return (evaluation * EVALUATION_WEIGHT) + (entropy * ENTROPY_WEIGHT);
+    }
+
+    /**
+     * calculates the total "distance" between notes
+     *
+     * @param solution a single tune
+     * @return the total distance of the tune
+     */
     private double entropy(String solution) {
         double entropy = 0.0;
 
@@ -83,6 +104,13 @@ class GeneticAlgorithm {
         return entropy;
     }
 
+    /**
+     * adds the elite candidate back into the population
+     *
+     * @param population the population of tunes
+     * @param eliteCandidate the elite candidate solution
+     * @return the complete population including the elite candidate
+     */
     private ArrayList<String> consolidatePopulation(ArrayList<String> population, String eliteCandidate) {
         ArrayList<String> newPopulation = new ArrayList<>(population);
         newPopulation.add(eliteCandidate);
@@ -125,6 +153,12 @@ class GeneticAlgorithm {
         //player.play("V0 I[Piano] D4q F4q G4q. | D4i Ri F4i Ri Ab4i G4h | D4q F4q G4q. | F4i D4qh.");
     }
 
+    /**
+     * implementation of a single point crossover
+     *
+     * @param population the population of tunes
+     * @return the crossed over population
+     */
     private ArrayList<String> crossover(ArrayList<String> population) {
         ArrayList<String> newPopulation = new ArrayList<>();
 
@@ -149,6 +183,12 @@ class GeneticAlgorithm {
         return newPopulation;
     }
 
+    /**
+     * mutation operator
+     *
+     * @param population the population of tunes
+     * @return the mutated population
+     */
     private ArrayList<String> mutation(ArrayList<String> population) {
         ArrayList<String> newPopulation = new ArrayList<>();
 
@@ -159,6 +199,12 @@ class GeneticAlgorithm {
         return newPopulation;
     }
 
+    /**
+     * increment or decrements a random note in the solution
+     *
+     * @param solution
+     * @return
+     */
     private String augment(String solution) {
         StringBuilder mutatedSolution = new StringBuilder();
 
@@ -209,7 +255,6 @@ class GeneticAlgorithm {
     private ArrayList<String> selection(Map<String, Double> population) {
         ArrayList<String> newPopulation = new ArrayList<>();
 
-        //TODO implement selection of population
         for (int i = 0; i < population.size() - 1; i++) {
             newPopulation.add(tournament(population, i, i + 1));
         }
@@ -220,10 +265,10 @@ class GeneticAlgorithm {
     /**
      * implementation of a tournament selection
      *
-     * @param population
-     * @param firstCandidate
-     * @param secondCandidate
-     * @return
+     * @param population the scored population
+     * @param firstCandidate the index of the first candidate in the population
+     * @param secondCandidate the index of the second candidate in the population
+     * @return the winning solution
      */
     private String tournament(Map<String, Double> population, int firstCandidate, int secondCandidate) {
         String victor = "";
@@ -252,7 +297,7 @@ class GeneticAlgorithm {
 
         //test scoring system so i can develop rest of GA
         for (int i = 0; i < population.size(); i++) {
-            scoredPopulation.put(population.get(i), entropy(population.get(i)));
+            scoredPopulation.put(population.get(i), weightedScore(i, entropy(population.get(i))));
         }
 
         return scoredPopulation;
