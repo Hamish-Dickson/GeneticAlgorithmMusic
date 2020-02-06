@@ -64,7 +64,7 @@ class GeneticAlgorithm {
 
 
         }
-        playSolution(population);
+        //playSolution(population);
     }
 
     /**
