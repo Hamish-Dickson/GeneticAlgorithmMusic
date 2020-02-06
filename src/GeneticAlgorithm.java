@@ -1,6 +1,9 @@
-import java.util.*;
-
 import org.jfugue.player.Player;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * Implementation of a genetic algorithm for the generation of music
@@ -21,7 +24,7 @@ class GeneticAlgorithm {
     private int currGeneration = 0;
     private int maxGenerations;
 
-    private final int POPULATION_SIZE = 6;
+    private final int POPULATION_SIZE = 10;
     private final int SOLUTION_LENGTH = 10;
     private final int POSSIBLE_NOTES = notes.size();
 
@@ -43,8 +46,8 @@ class GeneticAlgorithm {
      */
     void start() {
         ArrayList<String> population = generatePopulation();//initial random population to be used
-        Map<String, Double> scoredPopulation = new HashMap<>();
-        String eliteCandidate = "";
+        Map<String, Double> scoredPopulation;
+        String eliteCandidate;
 
         while (currGeneration < maxGenerations) {
             scoredPopulation = evaluatePopulation(population);
@@ -68,7 +71,7 @@ class GeneticAlgorithm {
      * weights the evaluation according to the weightings defined
      *
      * @param evaluation the evaluation score
-     * @param entropy the entropy score
+     * @param entropy    the entropy score
      * @return the weighted score
      */
     private double weightedScore(double evaluation, double entropy) {
@@ -91,6 +94,7 @@ class GeneticAlgorithm {
             String secondNote = solutionNotes[i + 1];
             int firstKey = 0, secondKey = 0;
 
+            //must lookup the key assigned to the note, giving a "position", usable for distance calculation
             for (Integer key : notes.keySet()) {
                 if (firstNote.equals(notes.get(key))) {
                     firstKey = key;
@@ -109,7 +113,7 @@ class GeneticAlgorithm {
     /**
      * adds the elite candidate back into the population
      *
-     * @param population the population of tunes
+     * @param population     the population of tunes
      * @param eliteCandidate the elite candidate solution
      * @return the complete population including the elite candidate
      */
@@ -138,21 +142,6 @@ class GeneticAlgorithm {
         }
 
         return bestSolution;
-    }
-
-    /**
-     * uses the JFugue player to playback the given population
-     *
-     * @param population the population of tunes to be played
-     */
-    private void playSolution(ArrayList<String> population) {
-        String solution = population.get(0);
-        //TODO select song(s) to play
-
-        Player player = new Player();
-        player.play(solution);
-        //player.play("CmajQ AmajQ BmajQ BmajQ AmajQ GmajQ EmajQ DmajQ");
-        //player.play("V0 I[Piano] D4q F4q G4q. | D4i Ri F4i Ri Ab4i G4h | D4q F4q G4q. | F4i D4qh.");
     }
 
     /**
@@ -209,15 +198,17 @@ class GeneticAlgorithm {
      */
     private String augment(String solution) {
         StringBuilder mutatedSolution = new StringBuilder();
+        String[] solutionNotes = solution.split(" ");
 
         Random random = new Random();
-        int posToChange = random.nextInt(solution.split(" ").length);
+        int posToChange = random.nextInt(solutionNotes.length);
         boolean increase = random.nextBoolean();
 
-        String[] solutionNotes = solution.split(" ");
         String noteToAugment = solutionNotes[posToChange];
-        Integer keyToAugment = 1;
+        int keyToAugment = 1;
 
+
+        //lookup the key of the note to augment
         for (Integer key : notes.keySet()) {
             if (notes.get(key).equals(noteToAugment)) {
                 keyToAugment = key;
@@ -225,13 +216,13 @@ class GeneticAlgorithm {
         }
 
         if (increase) {
-            if (keyToAugment == notes.size()) {
+            if (keyToAugment == notes.size()) {//if the note is the highest possible note available, reset to lowest
                 keyToAugment = 1;
             } else {
                 keyToAugment++;
             }
         } else {
-            if (keyToAugment == 1) {
+            if (keyToAugment == 1) {//if the note is the lowest possible note available, reset to highest
                 keyToAugment = notes.size();
             } else {
                 keyToAugment--;
@@ -267,21 +258,21 @@ class GeneticAlgorithm {
     /**
      * implementation of a tournament selection
      *
-     * @param population the scored population
-     * @param firstCandidate the index of the first candidate in the population
+     * @param population      the scored population
+     * @param firstCandidate  the index of the first candidate in the population
      * @param secondCandidate the index of the second candidate in the population
      * @return the winning solution
      */
     private String tournament(Map<String, Double> population, int firstCandidate, int secondCandidate) {
         String victor = "";
-        Object[] solutions = population.keySet().toArray();
+        String[] solutions = population.keySet().toArray(new String[0]);
 
         int randomInt = new Random().nextInt(100);
 
         if (population.get(solutions[firstCandidate]) > population.get(solutions[secondCandidate]) && randomInt < 75) {
-            victor = (String) solutions[firstCandidate];
+            victor = solutions[firstCandidate];
         } else {
-            victor = (String) solutions[secondCandidate];
+            victor = solutions[secondCandidate];
         }
 
         return victor;
@@ -336,5 +327,18 @@ class GeneticAlgorithm {
 
         //System.out.println(solution.toString());
         return solution.toString();
+    }
+
+    /**
+     * uses the JFugue player to playback the given population
+     *
+     * @param population the population of tunes to be played
+     */
+    private void playSolution(ArrayList<String> population) {
+        String solution = population.get(0);
+        //TODO select song(s) to play
+
+        Player player = new Player();
+        player.play(solution);
     }
 }
