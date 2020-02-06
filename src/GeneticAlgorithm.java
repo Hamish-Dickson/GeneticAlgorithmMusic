@@ -54,12 +54,14 @@ class GeneticAlgorithm {
             population = mutation(population);
             population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
-            System.out.println("Scored Population: " + scoredPopulation + " Size: " + scoredPopulation.size() + " Generation: " + currGeneration);
-            System.out.println("The Elite Candidate: " + eliteCandidate + " " + population.contains(eliteCandidate));
+
+            System.out.println("Generation: " + currGeneration);
+            System.out.println("Scored population: " + scoredPopulation);
+            System.out.println("The elite candidate this generation was: " + eliteCandidate + "\n");
+
 
         }
-        //System.out.println("The Weighted Population: " + scoredPopulation);
-        //playSolution(population);
+        playSolution(population);
     }
 
     /**
