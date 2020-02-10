@@ -1,9 +1,6 @@
 import org.jfugue.player.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Implementation of a genetic algorithm for the generation of music
@@ -28,8 +25,8 @@ class GeneticAlgorithm {
     private final int SOLUTION_LENGTH = 10;
     private final int POSSIBLE_NOTES = notes.size();
 
-    private final double EVALUATION_WEIGHT = 0.7;
-    private final double ENTROPY_WEIGHT = 0.3;
+    private final double EVALUATION_WEIGHT = 0.8;
+    private final double ENTROPY_WEIGHT = 0.2;
 
 
     /**
@@ -46,7 +43,7 @@ class GeneticAlgorithm {
      */
     void start() {
         ArrayList<String> population = generatePopulation();//initial random population to be used
-        Map<String, Double> scoredPopulation;
+        Map<String, Double> scoredPopulation = null;
         String eliteCandidate;
 
         while (currGeneration < maxGenerations) {
@@ -65,7 +62,7 @@ class GeneticAlgorithm {
 
 
         }
-        playSolution(population);
+        playSolution(scoredPopulation);
     }
 
     /**
@@ -108,7 +105,7 @@ class GeneticAlgorithm {
             entropy += Math.abs(firstKey - secondKey);
         }
 
-        return entropy/solutionNotes.length;
+        return entropy / solutionNotes.length;
     }
 
     /**
@@ -359,11 +356,30 @@ class GeneticAlgorithm {
      *
      * @param population the population of tunes to be played
      */
-    private void playSolution(ArrayList<String> population) {
-        String solution = population.get(0);
-        //TODO select song(s) to play
+    private void playSolution(Map<String, Double> population) {
+        ArrayList<String> solutions = getBest(population);
 
-        Player player = new Player();
-        player.play(solution);
+        for (String solution : solutions) {
+            Player player = new Player();
+            player.play(solution);
+        }
+    }
+
+    /**
+     * retrieves the best solutions from the population so they can be played
+     *
+     * @param population the population
+     * @return the best tunes
+     */
+    private ArrayList<String> getBest(Map<String, Double> population) {
+        ArrayList<String> best = new ArrayList<>();
+
+        while (best.size() < 3) {
+            String bestSolution = elitism(population);
+            best.add(bestSolution);
+            population.remove(bestSolution);
+        }
+
+        return best;
     }
 }
