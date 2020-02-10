@@ -12,14 +12,14 @@ import java.util.Random;
  */
 class GeneticAlgorithm {
     private final Map<Integer, String> notes = new HashMap<>() {{
-        put(1, "C#");
-        put(2, "D");
-        put(3, "E");
-        put(4, "F#");
-        put(5, "G");
-        put(6, "A");
-        put(7, "B");
-    }};
+        put(1, "D");
+        put(2, "E");
+        put(3, "F#");
+        put(4, "G");
+        put(5, "A");
+        put(6, "B");
+        put(7, "C#");
+    }};//d major
 
     private int currGeneration = 0;
     private int maxGenerations;
@@ -60,11 +60,12 @@ class GeneticAlgorithm {
 
             System.out.println("Generation: " + currGeneration);
             System.out.println("Scored population: " + scoredPopulation);
+            System.out.println("Population size is currently: " + scoredPopulation.size());
             System.out.println("The elite candidate this generation was: " + eliteCandidate + "\n");
 
 
         }
-        //playSolution(population);
+        playSolution(population);
     }
 
     /**
@@ -75,11 +76,11 @@ class GeneticAlgorithm {
      * @return the weighted score
      */
     private double weightedScore(double evaluation, double entropy) {
-        return (evaluation * EVALUATION_WEIGHT) + (entropy * ENTROPY_WEIGHT);
+        return Math.round((evaluation * EVALUATION_WEIGHT + entropy * ENTROPY_WEIGHT) * 100) / 100.0;
     }
 
     /**
-     * calculates the total "distance" between notes
+     * calculates the average "distance" between notes
      *
      * @param solution a single tune
      * @return the total distance of the tune
@@ -107,7 +108,7 @@ class GeneticAlgorithm {
             entropy += Math.abs(firstKey - secondKey);
         }
 
-        return entropy;
+        return entropy/solutionNotes.length;
     }
 
     /**
@@ -171,6 +172,7 @@ class GeneticAlgorithm {
             newPopulation.add(firstCandidate.toString());
             newPopulation.add(secondCandidate.toString());
         }
+
         return newPopulation;
     }
 
@@ -290,10 +292,33 @@ class GeneticAlgorithm {
 
         //test scoring system so i can develop rest of GA
         for (int i = 0; i < population.size(); i++) {
-            scoredPopulation.put(population.get(i), weightedScore(i, entropy(population.get(i))));
+            scoredPopulation.put(population.get(i), weightedScore(evaluateTune(population.get(i)), entropy(population.get(i))));
         }
 
         return scoredPopulation;
+    }
+
+    private double evaluateTune(String s) {
+        double fitness = 0;
+
+        //Solution contains notes for chord I
+        if (s.contains(notes.get(1)) && s.contains(notes.get(3)) && s.contains(notes.get(5))) {
+            fitness += 10;
+        }
+        //solution contains notes for chord VI
+        if (s.contains(notes.get(1)) && s.contains(notes.get(3)) && s.contains(notes.get(6))) {
+            fitness += 8;
+        }
+        //solution contains notes for chord V
+        if (s.contains(notes.get(2)) && s.contains(notes.get(5)) && s.contains(notes.get(6))) {
+            fitness += 8;
+        }
+        //solution contains notes for chord IV
+        if (s.contains(notes.get(3)) && s.contains(notes.get(5)) && s.contains(notes.get(7))) {
+            fitness += 6;
+        }
+
+        return fitness;
     }
 
     /**
