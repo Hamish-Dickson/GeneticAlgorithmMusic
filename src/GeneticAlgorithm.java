@@ -43,26 +43,26 @@ class GeneticAlgorithm {
      */
     void start() {
         ArrayList<String> population = generatePopulation();//initial random population to be used
-        Map<String, Double> scoredPopulation = null;
+        ArrayList<Double> scores = new ArrayList<>();
         String eliteCandidate;
 
         while (currGeneration < maxGenerations) {
-            scoredPopulation = evaluatePopulation(population);
-            eliteCandidate = elitism(scoredPopulation);
-            population = selection(scoredPopulation);
+            scores = evaluatePopulation(population);
+            eliteCandidate = elitism(population, scores);
+            population = selection(population, scores);
             population = crossover(population);
             population = mutation(population);
             population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
 
             System.out.println("Generation: " + currGeneration);
-            System.out.println("Scored population: " + scoredPopulation);
-            System.out.println("Population size is currently: " + scoredPopulation.size());
+            System.out.println("Scored population: " + population + scores);
+            System.out.println("Population size is currently: " + population.size());
             System.out.println("The elite candidate this generation was: " + eliteCandidate + "\n");
 
 
         }
-        playSolution(scoredPopulation);
+        playSolution(population, scores);
     }
 
     /**
@@ -124,18 +124,17 @@ class GeneticAlgorithm {
     /**
      * Finds the best candidate from a given population
      *
-     * @param scoredPopulation a pre-evaluated population set
+     * @param population a pre-evaluated population set
      * @return the elite candidate
      */
-    private String elitism(Map<String, Double> scoredPopulation) {
+    private String elitism(ArrayList<String> population, ArrayList<Double> scores) {
         String bestSolution = "";
         double bestScore = 0;
 
-        for (String solution : scoredPopulation.keySet()) {
-            double solutionScore = scoredPopulation.get(solution);
-            if (solutionScore > bestScore) {
-                bestSolution = solution;
-                bestScore = solutionScore;
+        for (Double score : scores) {
+            if (score > bestScore) {
+                bestSolution = population.get(scores.indexOf(score));
+                bestScore = score;
             }
         }
 
@@ -151,10 +150,16 @@ class GeneticAlgorithm {
     private ArrayList<String> crossover(ArrayList<String> population) {
         ArrayList<String> newPopulation = new ArrayList<>();
 
-        for (int i = 0; i < population.size() - 1; i += 2) {
+        for (int i = 0; i < population.size(); i += 1) {
             StringBuilder firstCandidate = new StringBuilder(), secondCandidate = new StringBuilder();
             String[] firstNotes = population.get(i).split(" ");
-            String[] secondNotes = population.get(i + 1).split(" ");
+            String[] secondNotes;
+
+            if (i == population.size() - 1) {
+                secondNotes = population.get(0).split(" ");
+            } else {
+                secondNotes = population.get(i + 1).split(" ");
+            }
 
             for (int j = 0; j < firstNotes.length; j++) {
                 if (j > firstNotes.length / 2) {
@@ -244,11 +249,11 @@ class GeneticAlgorithm {
      * @param population the current weighted population
      * @return the new population to be used for crossover
      */
-    private ArrayList<String> selection(Map<String, Double> population) {
+    private ArrayList<String> selection(ArrayList<String> population, ArrayList<Double> scores) {
         ArrayList<String> newPopulation = new ArrayList<>();
 
-        for (int i = 0; i < population.size() - 1; i++) {
-            newPopulation.add(tournament(population, i, i + 1));
+        for (int i = 0; i < population.size() - 1; i += 2) {
+            newPopulation.add(tournament(population, scores, i, i + 1));
         }
 
         return newPopulation;
@@ -262,16 +267,15 @@ class GeneticAlgorithm {
      * @param secondCandidate the index of the second candidate in the population
      * @return the winning solution
      */
-    private String tournament(Map<String, Double> population, int firstCandidate, int secondCandidate) {
+    private String tournament(ArrayList<String> population, ArrayList<Double> scores, int firstCandidate, int secondCandidate) {
         String victor = "";
-        String[] solutions = population.keySet().toArray(new String[0]);
 
         int randomInt = new Random().nextInt(100);
 
-        if (population.get(solutions[firstCandidate]) > population.get(solutions[secondCandidate]) && randomInt < 75) {
-            victor = solutions[firstCandidate];
+        if (scores.get(firstCandidate) > scores.get(secondCandidate) && randomInt < 75) {
+            victor = population.get(firstCandidate);
         } else {
-            victor = solutions[secondCandidate];
+            victor = population.get(secondCandidate);
         }
 
         return victor;
@@ -283,13 +287,12 @@ class GeneticAlgorithm {
      * @param population the population of tunes to be evaluated
      * @return a set of tunes with their associated scores
      */
-    private Map<String, Double> evaluatePopulation(ArrayList<String> population) {
-        //TODO implement evaluation criteria
-        Map<String, Double> scoredPopulation = new HashMap<>();
+    private ArrayList<Double> evaluatePopulation(ArrayList<String> population) {
+        ArrayList<Double> scoredPopulation = new ArrayList<>();
 
         //test scoring system so i can develop rest of GA
-        for (int i = 0; i < population.size(); i++) {
-            scoredPopulation.put(population.get(i), weightedScore(evaluateTune(population.get(i)), entropy(population.get(i))));
+        for (String s : population) {
+            scoredPopulation.add(weightedScore(evaluateTune(s), entropy(s)));
         }
 
         return scoredPopulation;
@@ -356,8 +359,8 @@ class GeneticAlgorithm {
      *
      * @param population the population of tunes to be played
      */
-    private void playSolution(Map<String, Double> population) {
-        ArrayList<String> solutions = getBest(population);
+    private void playSolution(ArrayList<String> population, ArrayList<Double> scores) {
+        ArrayList<String> solutions = getBest(population, scores);
 
         for (String solution : solutions) {
             Player player = new Player();
@@ -371,12 +374,13 @@ class GeneticAlgorithm {
      * @param population the population
      * @return the best tunes
      */
-    private ArrayList<String> getBest(Map<String, Double> population) {
+    private ArrayList<String> getBest(ArrayList<String> population, ArrayList<Double> scores) {
         ArrayList<String> best = new ArrayList<>();
 
         while (best.size() < 3) {
-            String bestSolution = elitism(population);
+            String bestSolution = elitism(population, scores);
             best.add(bestSolution);
+            scores.remove(population.indexOf(bestSolution));
             population.remove(bestSolution);
         }
 
