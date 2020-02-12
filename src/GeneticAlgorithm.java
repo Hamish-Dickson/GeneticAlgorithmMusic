@@ -9,19 +9,20 @@ import java.util.*;
  */
 class GeneticAlgorithm {
     private final Map<Integer, String> notes = new HashMap<>() {{
-        put(1, "D");
-        put(2, "E");
-        put(3, "F#");
-        put(4, "G");
-        put(5, "A");
-        put(6, "B");
-        put(7, "C#");
+        put(1, "D5");
+        put(2, "E5");
+        put(3, "F#5");
+        put(4, "G5");
+        put(5, "A5");
+        put(6, "B5");
+        put(7, "C#5");
+        put(8, "D6");
     }};//d major
 
     private int currGeneration = 0;
     private int maxGenerations;
 
-    private final int POPULATION_SIZE = 10;
+    private final int POPULATION_SIZE = 100;
     private final int SOLUTION_LENGTH = 10;
     private final int POSSIBLE_NOTES = notes.size();
 
@@ -44,25 +45,34 @@ class GeneticAlgorithm {
     void start() {
         ArrayList<String> population = generatePopulation();//initial random population to be used
         ArrayList<Double> scores = new ArrayList<>();
-        String eliteCandidate;
+        String eliteCandidate = " ";
 
         while (currGeneration < maxGenerations) {
+            Collections.shuffle(population);//shuffle so as parents should not re-pair from last generation.
             scores = evaluatePopulation(population);
             eliteCandidate = elitism(population, scores);
+            printGenStats(population, scores, eliteCandidate);
             population = selection(population, scores);
             population = crossover(population);
             population = mutation(population);
             population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
 
-            System.out.println("Generation: " + currGeneration);
-            System.out.println("Scored population: " + population + scores);
-            System.out.println("Population size is currently: " + population.size());
-            System.out.println("The elite candidate this generation was: " + eliteCandidate + "\n");
-
-
         }
         playSolution(population, scores);
+    }
+
+    private void printGenStats(ArrayList<String> population, ArrayList<Double> scores, String eliteCandidate) {
+        System.out.println("Generation: " + currGeneration);
+        System.out.println("Scored population: ");
+        double total = 0;
+        for (int i = 0; i < population.size(); i++) {
+            //System.out.println(population.get(i) + "\t\t=\t\t" + scores.get(i));
+            total += scores.get(i);
+        }
+        System.out.println("\nPopulation size is currently: " + population.size());
+        System.out.println("Average score is: " + Math.round((total / population.size()) * 100) / 100);
+        System.out.println("The elite candidate this generation was: " + eliteCandidate + "\n");
     }
 
     /**
@@ -302,11 +312,11 @@ class GeneticAlgorithm {
         double fitness = 0;
 
         //Solution contains notes for chord I
-        if (s.contains(notes.get(1)) && s.contains(notes.get(3)) && s.contains(notes.get(5))) {
+        if ((s.contains(notes.get(1)) || s.contains(notes.get(8))) && s.contains(notes.get(3)) && s.contains(notes.get(5))) {
             fitness += 10;
         }
         //solution contains notes for chord VI
-        if (s.contains(notes.get(1)) && s.contains(notes.get(3)) && s.contains(notes.get(6))) {
+        if ((s.contains(notes.get(1)) || s.contains(notes.get(8))) && s.contains(notes.get(3)) && s.contains(notes.get(6))) {
             fitness += 8;
         }
         //solution contains notes for chord V
