@@ -1,5 +1,6 @@
+import org.jfree.chart.plot.FastScatterPlot;
 import org.jfugue.player.Player;
-
+import org.jfree.chart.*;
 import java.util.*;
 
 /**
@@ -42,7 +43,7 @@ class GeneticAlgorithm {
     /**
      * Starts the genetic algorithm process
      */
-    void start() {
+    Result start() {
         ArrayList<String> population = generatePopulation();//initial random population to be used
         ArrayList<Double> scores = new ArrayList<>();
         String eliteCandidate = " ";
@@ -57,9 +58,10 @@ class GeneticAlgorithm {
             population = mutation(population);
             population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
-
         }
         playSolution(population, scores);
+
+        return new Result(population, scores);
     }
 
     private void printGenStats(ArrayList<String> population, ArrayList<Double> scores, String eliteCandidate) {
@@ -72,6 +74,7 @@ class GeneticAlgorithm {
         }
         System.out.println("\nPopulation size is currently: " + population.size());
         System.out.println("Average score is: " + Math.round((total / population.size()) * 100) / 100);
+        System.out.println("The highest score is: " + Collections.max(scores));
         System.out.println("The elite candidate this generation was: " + eliteCandidate + "\n");
     }
 
