@@ -31,20 +31,35 @@ public class Result {
         return maxScore;
     }
 
-    public void writeCSV(String filepath){
+    public void writeCSV(String filepath) {
         PrintWriter pw = null;
-        File csvFile = new File(filepath);
+        File improvesFile = new File(filepath + " improves" + ".csv");
+        File averagesFile = new File(filepath + " averages" + ".csv");
         System.out.println("printing results");
-        try{
-            pw = new PrintWriter(csvFile);
+        try {
+            pw = new PrintWriter(improvesFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        for (Double score: improvingScores){
-            System.out.println("printing: " + score);
+        for (double score : improvingScores) {
+            System.out.println("max printing: " + score);
             pw.write(String.valueOf(score));
             pw.write(",");
         }
+        pw.close();
+        pw.flush();
+
+        try {
+            pw = new PrintWriter(averagesFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        for (double score : averageScores) {
+            pw.write(String.valueOf(score));
+            pw.write(",");
+        }
+
         pw.close();
     }
 }

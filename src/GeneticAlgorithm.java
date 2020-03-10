@@ -24,13 +24,16 @@ class GeneticAlgorithm {
     private int currGeneration = 0;
     private int maxGenerations;
 
-    private final int POPULATION_SIZE = 10;
+    private final int POPULATION_SIZE = 100;
     private final int SOLUTION_LENGTH = 32;
     private final int POSSIBLE_NOTES = notes.size();
 
     private final double EVALUATION_WEIGHT = 0.8;
     private final double ENTROPY_WEIGHT = 0.2;
 
+    private final int CROSSOVER_POINTS = 1;
+    private final int MUTATION_STRENGTH = 1;
+    private final int MUTATION_POINTS = 1;
 
     /**
      * Constructor for the genetic algorithm
@@ -229,38 +232,48 @@ class GeneticAlgorithm {
     private String augment(String solution) {
         StringBuilder mutatedSolution = new StringBuilder();
         String[] solutionNotes = solution.split(" ");
+        ArrayList<Integer> posToChange = new ArrayList<>();
 
         Random random = new Random();
-        int posToChange = random.nextInt(solutionNotes.length);
+
+        for (int i = 0; i < MUTATION_POINTS; i++) {
+            posToChange.add(random.nextInt(solutionNotes.length));
+        }
+
         boolean increase = random.nextBoolean();
 
-        String noteToAugment = solutionNotes[posToChange];
+        ArrayList<String> notesToAugment = new ArrayList<>();
+        for (int i = 0; i < MUTATION_POINTS; i++) {
+            notesToAugment.add(solutionNotes[posToChange.get(i)]);
+        }
+
         int keyToAugment = 1;
 
-
-        //lookup the key of the note to augment
-        for (Integer key : notes.keySet()) {
-            if (notes.get(key).equals(noteToAugment)) {
-                keyToAugment = key;
+        for (String noteToAugment : notesToAugment) {
+            //lookup the key of the note to augment
+            for (Integer key : notes.keySet()) {
+                if (notes.get(key).equals(noteToAugment)) {
+                    keyToAugment = key;
+                }
             }
+
+            for (int i = 0; i < MUTATION_STRENGTH; i++) {
+                if (increase) {
+                    if (keyToAugment == notes.size()) {//if the note is the highest possible note available, reset to lowest
+                        keyToAugment = 1;
+                    } else {
+                        keyToAugment++;
+                    }
+                } else {
+                    if (keyToAugment == 1) {//if the note is the lowest possible note available, reset to highest
+                        keyToAugment = notes.size();
+                    } else {
+                        keyToAugment--;
+                    }
+                }
+            }
+            solutionNotes[posToChange.get(notesToAugment.indexOf(noteToAugment))] = notes.get(keyToAugment);
         }
-
-        if (increase) {
-            if (keyToAugment == notes.size()) {//if the note is the highest possible note available, reset to lowest
-                keyToAugment = 1;
-            } else {
-                keyToAugment++;
-            }
-        } else {
-            if (keyToAugment == 1) {//if the note is the lowest possible note available, reset to highest
-                keyToAugment = notes.size();
-            } else {
-                keyToAugment--;
-            }
-        }
-
-        solutionNotes[posToChange] = notes.get(keyToAugment);
-
         for (String solutionNote : solutionNotes) {
             mutatedSolution.append(solutionNote).append(" ");
         }
