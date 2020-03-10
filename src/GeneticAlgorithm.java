@@ -1,6 +1,7 @@
 import org.jfree.chart.plot.FastScatterPlot;
 import org.jfugue.player.Player;
 import org.jfree.chart.*;
+
 import java.util.*;
 
 /**
@@ -23,8 +24,8 @@ class GeneticAlgorithm {
     private int currGeneration = 0;
     private int maxGenerations;
 
-    private final int POPULATION_SIZE = 100;
-    private final int SOLUTION_LENGTH = 10;
+    private final int POPULATION_SIZE = 10;
+    private final int SOLUTION_LENGTH = 32;
     private final int POSSIBLE_NOTES = notes.size();
 
     private final double EVALUATION_WEIGHT = 0.8;
@@ -46,22 +47,34 @@ class GeneticAlgorithm {
     Result start() {
         ArrayList<String> population = generatePopulation();//initial random population to be used
         ArrayList<Double> scores = new ArrayList<>();
+        ArrayList<Double> improvingScores = new ArrayList<>();
+        ArrayList<Double> averageScores = new ArrayList<>();
         String eliteCandidate = " ";
 
         while (currGeneration < maxGenerations) {
             Collections.shuffle(population);//shuffle so as parents should not re-pair from last generation.
             scores = evaluatePopulation(population);
+            improvingScores.add(Collections.max(scores));
+            averageScores.add(getAverage(scores));
             eliteCandidate = elitism(population, scores);
-            printGenStats(population, scores, eliteCandidate);
+            //printGenStats(population, scores, eliteCandidate);
             population = selection(population, scores);
             population = crossover(population);
             population = mutation(population);
             population = consolidatePopulation(population, eliteCandidate);
             currGeneration++;
         }
-        playSolution(population, scores);
+        //playSolution(population, scores);
 
-        return new Result(population, scores);
+        return new Result(population, scores, improvingScores, averageScores);
+    }
+
+    private Double getAverage(ArrayList<Double> scores) {
+        double total = 0;
+        for (Double score : scores) {
+            total += score;
+        }
+        return total / scores.size();
     }
 
     private void printGenStats(ArrayList<String> population, ArrayList<Double> scores, String eliteCandidate) {
@@ -314,23 +327,54 @@ class GeneticAlgorithm {
     private double evaluateTune(String s) {
         double fitness = 0;
 
+        boolean chord1 = false, chord2 = false, chord3, chord4 = false, chord5 = false, chord6 = false;
+
         //Solution contains notes for chord I
         if ((s.contains(notes.get(1)) || s.contains(notes.get(8))) && s.contains(notes.get(3)) && s.contains(notes.get(5))) {
             fitness += 10;
+            chord1 = true;
         }
         //solution contains notes for chord VI
         if ((s.contains(notes.get(1)) || s.contains(notes.get(8))) && s.contains(notes.get(3)) && s.contains(notes.get(6))) {
             fitness += 8;
+            chord6 = true;
         }
         //solution contains notes for chord V
-        if (s.contains(notes.get(2)) && s.contains(notes.get(5)) && s.contains(notes.get(6))) {
+        if (s.contains(notes.get(2)) && s.contains(notes.get(5)) && s.contains(notes.get(7))) {
             fitness += 8;
+            chord5 = true;
         }
         //solution contains notes for chord IV
-        if (s.contains(notes.get(3)) && s.contains(notes.get(5)) && s.contains(notes.get(7))) {
+        if (s.contains(notes.get(4)) && s.contains(notes.get(6)) && (s.contains(notes.get(8)) || s.contains(notes.get(1)))) {
             fitness += 6;
+            chord4 = true;
+        }
+        //solution contains notes for chord II
+        if (s.contains(notes.get(2)) && s.contains(notes.get(4)) && s.contains(notes.get(6))) {
+            fitness += 5;
+            chord2 = true;
+        }
+        //solution contains notes for chord III
+        if (s.contains(notes.get(3)) && s.contains(notes.get(5)) && s.contains(notes.get(7))) {
+            fitness += 4;
+            chord3 = true;
+        }
+        //solution contains notes for chord VII dim
+        if (s.contains(notes.get(7)) && s.contains(notes.get(2)) && s.contains(notes.get(4))) {
+            fitness += 2;
+        }
+        //solution contains notes for chord VII min 7th
+        if (s.contains(notes.get(7)) && s.contains(notes.get(2)) && s.contains(notes.get(4)) && s.contains(notes.get(6))) {
+            fitness += 4;
         }
 
+        if (chord1 && chord6 && chord4 && chord5) {
+            fitness += 10;
+        } else if (chord1 && chord4 && chord5) {
+            fitness += 6;
+        } else if (chord2 && chord5 && chord1) {
+            fitness += 3;
+        }
         return fitness;
     }
 

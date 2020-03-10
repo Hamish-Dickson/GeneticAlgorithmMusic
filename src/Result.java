@@ -1,22 +1,21 @@
-import org.jfree.data.xy.XYDataset;
-
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class Result {
     private ArrayList<String> population;
     private ArrayList<Double> scores;
-    private double averageScore;
+    private ArrayList<Double> improvingScores;
+    private ArrayList<Double> averageScores;
     private double maxScore;
 
-    public Result(ArrayList<String> population, ArrayList<Double> scores) {
+    public Result(ArrayList<String> population, ArrayList<Double> scores, ArrayList<Double> improvingScores, ArrayList<Double> averageScores) {
         this.population = population;
         this.scores = scores;
-        double total = 0;
-        for (double score : scores) {
-            total += score;
-        }
-        averageScore = total/population.size();
+        this.improvingScores = improvingScores;
+        this.averageScores = averageScores;
         maxScore = Collections.max(scores);
     }
 
@@ -28,11 +27,24 @@ public class Result {
         return scores;
     }
 
-    public double getAverageScore() {
-        return averageScore;
-    }
-
     public double getMaxScore() {
         return maxScore;
+    }
+
+    public void writeCSV(String filepath){
+        PrintWriter pw = null;
+        File csvFile = new File(filepath);
+        System.out.println("printing results");
+        try{
+            pw = new PrintWriter(csvFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        for (Double score: improvingScores){
+            System.out.println("printing: " + score);
+            pw.write(String.valueOf(score));
+            pw.write(",");
+        }
+        pw.close();
     }
 }
