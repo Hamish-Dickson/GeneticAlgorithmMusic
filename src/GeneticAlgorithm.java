@@ -1,6 +1,4 @@
-import org.jfree.chart.plot.FastScatterPlot;
 import org.jfugue.player.Player;
-import org.jfree.chart.*;
 
 import java.util.*;
 
@@ -21,6 +19,8 @@ class GeneticAlgorithm {
         put(8, "D6");
     }};//d major
 
+    private int iterations;
+
     private int currGeneration = 0;
     private int maxGenerations;
 
@@ -28,48 +28,82 @@ class GeneticAlgorithm {
     private final int SOLUTION_LENGTH = 32;
     private final int POSSIBLE_NOTES = notes.size();
 
-    private final double EVALUATION_WEIGHT = 0.8;
-    private final double ENTROPY_WEIGHT = 0.2;
+    private double EVALUATION_WEIGHT = 1;
+    private double ENTROPY_WEIGHT = 0;
 
-    private final int CROSSOVER_POINTS = 1;
-    private final int MUTATION_STRENGTH = 1;
-    private final int MUTATION_POINTS = 1;
+    private int CROSSOVER_POINTS = 1;
+    private int MUTATION_STRENGTH = 1;
+    private int MUTATION_POINTS = 1;
 
     /**
      * Constructor for the genetic algorithm
      *
      * @param generations the number of generations the algorithm should run for
      */
-    GeneticAlgorithm(int generations) {
+    GeneticAlgorithm(int iterations, int generations, double evalWeight, double entropyWeight, int crossoverPts, int mutationStr, int mutationPts) {
+        this.iterations = iterations;
         maxGenerations = generations;
+        EVALUATION_WEIGHT = evalWeight;
+        ENTROPY_WEIGHT = entropyWeight;
+        CROSSOVER_POINTS = crossoverPts;
+        MUTATION_STRENGTH = mutationStr;
+        MUTATION_POINTS = mutationPts;
     }
 
     /**
      * Starts the genetic algorithm process
      */
     Result start() {
-        ArrayList<String> population = generatePopulation();//initial random population to be used
-        ArrayList<Double> scores = new ArrayList<>();
-        ArrayList<Double> improvingScores = new ArrayList<>();
-        ArrayList<Double> averageScores = new ArrayList<>();
-        String eliteCandidate = " ";
-
-        while (currGeneration < maxGenerations) {
-            Collections.shuffle(population);//shuffle so as parents should not re-pair from last generation.
-            scores = evaluatePopulation(population);
-            improvingScores.add(Collections.max(scores));
-            averageScores.add(getAverage(scores));
-            eliteCandidate = elitism(population, scores);
-            //printGenStats(population, scores, eliteCandidate);
-            population = selection(population, scores);
-            population = crossover(population);
-            population = mutation(population);
-            population = consolidatePopulation(population, eliteCandidate);
-            currGeneration++;
+        ArrayList<Result> results = new ArrayList<>();
+        for (int i = 0; i < iterations; i++) {
+            ArrayList<String> population = generatePopulation();//initial random population to be used
+            ArrayList<Double> scores = new ArrayList<>();
+            ArrayList<Double> improvingScores = new ArrayList<>();
+            ArrayList<Double> averageScores = new ArrayList<>();
+            String eliteCandidate = " ";
+            currGeneration = 0;
+            while (currGeneration < maxGenerations) {
+                Collections.shuffle(population);//shuffle so as parents should not re-pair from last generation.
+                scores = evaluatePopulation(population);
+                improvingScores.add(Collections.max(scores));
+                averageScores.add(getAverage(scores));
+                eliteCandidate = elitism(population, scores);
+                //printGenStats(population, scores, eliteCandidate);
+                population = selection(population, scores);
+                population = crossover(population);
+                population = mutation(population);
+                population = consolidatePopulation(population, eliteCandidate);
+                currGeneration++;
+            }
+            results.add(new Result(improvingScores, averageScores));
+            //playSolution(population, scores);
         }
-        //playSolution(population, scores);
+        for (Result r: results){
+            System.out.println("improve: " + r.getImprovingScores());
+            System.out.println("avg: " + r.getAverageScores());
+        }
+        return averageResults(results);
+    }
 
-        return new Result(population, scores, improvingScores, averageScores);
+    private Result averageResults(ArrayList<Result> results) {
+        ArrayList<Double> averageMaximum = new ArrayList<>();
+        ArrayList<Double> averageAverage = new ArrayList<>();
+
+        for (int j = 0; j < maxGenerations; j++) {
+            averageMaximum.add(0.0);
+            averageAverage.add(0.0);
+        }
+
+        for (int i = 0; i < maxGenerations; i++) {
+            for (Result result : results) {
+                averageMaximum.set(i, averageMaximum.get(i) + result.getImprovingScores().get(i));
+                averageAverage.set(i, averageAverage.get(i) + result.getAverageScores().get(i));
+            }
+            averageMaximum.set(i, averageMaximum.get(i) / iterations);
+            averageAverage.set(i, averageAverage.get(i) / iterations);
+        }
+
+        return new Result(averageMaximum, averageAverage);
     }
 
     private Double getAverage(ArrayList<Double> scores) {
@@ -184,22 +218,44 @@ class GeneticAlgorithm {
             String[] firstNotes = population.get(i).split(" ");
             String[] secondNotes;
 
+            boolean twoPoint = false;
+            int twoPointStart = 0, twoPointFinish = 0;
+
+            if (CROSSOVER_POINTS == 2) {
+                twoPoint = true;
+                do {
+                    twoPointStart = new Random().nextInt(firstNotes.length);
+                    twoPointFinish = new Random().nextInt(firstNotes.length);
+                } while (twoPointFinish == twoPointStart);
+            }
+
             if (i == population.size() - 1) {
                 secondNotes = population.get(0).split(" ");
             } else {
                 secondNotes = population.get(i + 1).split(" ");
             }
 
-            for (int j = 0; j < firstNotes.length; j++) {
-                if (j > firstNotes.length / 2) {
-                    firstCandidate.append(firstNotes[j]).append(" ");
-                    secondCandidate.append(secondNotes[j]).append(" ");
-                } else {
-                    firstCandidate.append(secondNotes[j]).append(" ");
-                    secondCandidate.append(firstNotes[j]).append(" ");
+            if (twoPoint) {
+                for (int j = 0; j < firstNotes.length; j++) {
+                    if (twoPointStart < j && j < twoPointFinish) {
+                        firstCandidate.append(firstNotes[j]).append(" ");
+                        secondCandidate.append(secondNotes[j]).append(" ");
+                    } else {
+                        firstCandidate.append(secondNotes[j]).append(" ");
+                        secondCandidate.append(firstNotes[j]).append(" ");
+                    }
+                }
+            } else {
+                for (int j = 0; j < firstNotes.length; j++) {
+                    if (j > firstNotes.length / 2) {
+                        firstCandidate.append(firstNotes[j]).append(" ");
+                        secondCandidate.append(secondNotes[j]).append(" ");
+                    } else {
+                        firstCandidate.append(secondNotes[j]).append(" ");
+                        secondCandidate.append(firstNotes[j]).append(" ");
+                    }
                 }
             }
-
             newPopulation.add(firstCandidate.toString());
             newPopulation.add(secondCandidate.toString());
         }

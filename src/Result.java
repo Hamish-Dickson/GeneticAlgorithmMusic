@@ -5,30 +5,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Result {
-    private ArrayList<String> population;
-    private ArrayList<Double> scores;
     private ArrayList<Double> improvingScores;
     private ArrayList<Double> averageScores;
     private double maxScore;
 
-    public Result(ArrayList<String> population, ArrayList<Double> scores, ArrayList<Double> improvingScores, ArrayList<Double> averageScores) {
-        this.population = population;
-        this.scores = scores;
+    public Result(ArrayList<Double> improvingScores, ArrayList<Double> averageScores) {
         this.improvingScores = improvingScores;
         this.averageScores = averageScores;
-        maxScore = Collections.max(scores);
-    }
-
-    public ArrayList<String> getPopulation() {
-        return population;
-    }
-
-    public ArrayList<Double> getScores() {
-        return scores;
     }
 
     public double getMaxScore() {
         return maxScore;
+    }
+
+    public ArrayList<Double> getImprovingScores() {
+        return improvingScores;
+    }
+
+    public ArrayList<Double> getAverageScores() {
+        return averageScores;
     }
 
     public void writeCSV(String filepath) {
@@ -42,7 +37,7 @@ public class Result {
             e.printStackTrace();
         }
         for (double score : improvingScores) {
-            System.out.println("max printing: " + score);
+            //System.out.println("max printing: " + score);
             pw.write(String.valueOf(score));
             pw.write(",");
         }
