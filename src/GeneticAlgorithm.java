@@ -1,5 +1,6 @@
 import org.jfugue.player.Player;
 
+import javax.swing.*;
 import java.util.*;
 
 /**
@@ -35,12 +36,16 @@ class GeneticAlgorithm {
     private int MUTATION_STRENGTH = 1;
     private int MUTATION_POINTS = 1;
 
+    private boolean SURROGATE;
+    private int SURROGATE_INTERVAL;
+
     /**
      * Constructor for the genetic algorithm
      *
      * @param generations the number of generations the algorithm should run for
      */
-    GeneticAlgorithm(int iterations, int generations, double evalWeight, double entropyWeight, int crossoverPts, int mutationStr, int mutationPts) {
+    GeneticAlgorithm(int iterations, int generations, double evalWeight, double entropyWeight, int crossoverPts,
+                     int mutationStr, int mutationPts, boolean surrogate, int surrogateInterval) {
         this.iterations = iterations;
         maxGenerations = generations;
         EVALUATION_WEIGHT = evalWeight;
@@ -48,6 +53,8 @@ class GeneticAlgorithm {
         CROSSOVER_POINTS = crossoverPts;
         MUTATION_STRENGTH = mutationStr;
         MUTATION_POINTS = mutationPts;
+        SURROGATE = surrogate;
+        SURROGATE_INTERVAL = surrogateInterval;
     }
 
     /**
@@ -56,6 +63,7 @@ class GeneticAlgorithm {
     Result start() {
         ArrayList<Result> results = new ArrayList<>();
         for (int i = 0; i < iterations; i++) {
+
             ArrayList<String> population = generatePopulation();//initial random population to be used
             ArrayList<Double> scores = new ArrayList<>();
             ArrayList<Double> improvingScores = new ArrayList<>();
@@ -63,6 +71,9 @@ class GeneticAlgorithm {
             String eliteCandidate = " ";
             currGeneration = 0;
             while (currGeneration < maxGenerations) {
+                if (SURROGATE && SURROGATE_INTERVAL == currGeneration) {
+                    System.out.println("SURROGATE GENERATION");
+                }
                 Collections.shuffle(population);//shuffle so as parents should not re-pair from last generation.
                 scores = evaluatePopulation(population);
                 improvingScores.add(Collections.max(scores));
@@ -78,7 +89,7 @@ class GeneticAlgorithm {
             results.add(new Result(improvingScores, averageScores));
             //playSolution(population, scores);
         }
-        for (Result r: results){
+        for (Result r : results) {
             System.out.println("improve: " + r.getImprovingScores());
             System.out.println("avg: " + r.getAverageScores());
         }
@@ -145,8 +156,8 @@ class GeneticAlgorithm {
      * @param solution a single tune
      * @return the total distance of the tune
      */
-    private double entropy(String solution) {
-        double entropy = 0.0;
+    private double distance(String solution) {
+        double distance = 0.0;
 
         String[] solutionNotes = solution.split(" ");
 
@@ -165,10 +176,10 @@ class GeneticAlgorithm {
                 }
             }
 
-            entropy += Math.abs(firstKey - secondKey);
+            distance += Math.abs(firstKey - secondKey);
         }
 
-        return entropy / solutionNotes.length;
+        return distance / solutionNotes.length;
     }
 
     /**
@@ -384,13 +395,45 @@ class GeneticAlgorithm {
      */
     private ArrayList<Double> evaluatePopulation(ArrayList<String> population) {
         ArrayList<Double> scoredPopulation = new ArrayList<>();
+        int surrogatePos = 0;
+        if (SURROGATE && (currGeneration + 1) % SURROGATE_INTERVAL == 0 && currGeneration != 0) {
+            Random random = new Random();
+            surrogatePos = random.nextInt(population.size());
+        }
 
-        //test scoring system so i can develop rest of GA
         for (String s : population) {
-            scoredPopulation.add(weightedScore(evaluateTune(s), entropy(s)));
+            if (population.indexOf(s) == surrogatePos && SURROGATE && (currGeneration + 1) % SURROGATE_INTERVAL == 0 && currGeneration != 0) {
+                scoredPopulation.add(surrogate(s));
+            } else {
+                System.out.println(population.indexOf(s));
+                scoredPopulation.add(weightedScore(evaluateTune(s), distance(s)));
+            }
         }
 
         return scoredPopulation;
+    }
+
+    private Double surrogate(String s) {
+        double rating = 0.0;
+        System.out.println("Playing tune");
+        Player player = new Player();
+        player.play(s);
+        String input;
+        do {
+            System.out.println("Please rate the tune you just heard on a scale of 1-100(only whole numbers are accepted");
+            Scanner scanner = new Scanner(System.in);
+            input = scanner.nextLine();
+        } while (!isInteger(input) && (Integer.parseInt(input) < 0 && Integer.parseInt(input) > 100));
+        return Math.round((Integer.parseInt(input) / 100.0) * (EVALUATION_WEIGHT * 76 + ENTROPY_WEIGHT * 7) * 100.0) / 100.0;
+    }
+
+    private boolean isInteger(String input) {
+        try {
+            Integer.parseInt(input);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     private double evaluateTune(String s) {
