@@ -7,7 +7,7 @@ public class Main {
     }
 
     private static void test() {
-        int iterations = 100;
+        int iterations = 1;
         int generations = 200;
 
         GeneticAlgorithm ga;
@@ -15,8 +15,8 @@ public class Main {
 
         ga = new GeneticAlgorithm(iterations, generations, 0.8, 0.2, 1, 1, 1, false, 0);
         result = ga.start();
-        result.writeCSV("C:\\Users\\bktzg\\baseline");
-
+        result.writeCSV("C:\\Users\\bktzg\\WEKA");
+/*
         ga = new GeneticAlgorithm(iterations, generations, 0.8, 0.2, 2, 1, 1, false, 0);
         result = ga.start();
         result.writeCSV("C:\\Users\\bktzg\\twopoint");
@@ -86,5 +86,7 @@ public class Main {
         ga = new GeneticAlgorithm(iterations, generations, 0.8, 0.2, 1, 1, 1, true, 50);
         result = ga.start();
         result.writeCSV("C:\\Users\\bktzg\\surrogate");
+
+ */
     }
 }

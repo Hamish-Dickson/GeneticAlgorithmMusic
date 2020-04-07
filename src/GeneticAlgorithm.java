@@ -1,6 +1,5 @@
 import org.jfugue.player.Player;
 
-import javax.swing.*;
 import java.util.*;
 
 /**
@@ -68,6 +67,7 @@ class GeneticAlgorithm {
             ArrayList<Double> scores = new ArrayList<>();
             ArrayList<Double> improvingScores = new ArrayList<>();
             ArrayList<Double> averageScores = new ArrayList<>();
+            ArrayList<String> elites = new ArrayList<>();
             String eliteCandidate = " ";
             currGeneration = 0;
             while (currGeneration < maxGenerations) {
@@ -85,8 +85,9 @@ class GeneticAlgorithm {
                 population = mutation(population);
                 population = consolidatePopulation(population, eliteCandidate);
                 currGeneration++;
+                elites.add(eliteCandidate);
             }
-            results.add(new Result(improvingScores, averageScores));
+            results.add(new Result(improvingScores, averageScores, elites));
             //playSolution(population, scores);
         }
         for (Result r : results) {
@@ -96,6 +97,12 @@ class GeneticAlgorithm {
         return averageResults(results);
     }
 
+    /**
+     * averages the results over the amount of repeats done
+     *
+     * @param results the results from all of the repeats
+     * @return the average results across all repeats
+     */
     private Result averageResults(ArrayList<Result> results) {
         ArrayList<Double> averageMaximum = new ArrayList<>();
         ArrayList<Double> averageAverage = new ArrayList<>();
@@ -114,9 +121,15 @@ class GeneticAlgorithm {
             averageAverage.set(i, averageAverage.get(i) / iterations);
         }
 
-        return new Result(averageMaximum, averageAverage);
+        return new Result(averageMaximum, averageAverage, results.get(results.size()-1).population);
     }
 
+    /**
+     * gets the average score from a given set of scores
+     *
+     * @param scores collection of scores to be averaged
+     * @return the average score
+     */
     private Double getAverage(ArrayList<Double> scores) {
         double total = 0;
         for (Double score : scores) {
@@ -125,6 +138,13 @@ class GeneticAlgorithm {
         return total / scores.size();
     }
 
+    /**
+     * prints out the statistics from the current generations
+     *
+     * @param population the population
+     * @param scores the scores of the population
+     * @param eliteCandidate the elite candidate for this population
+     */
     private void printGenStats(ArrayList<String> population, ArrayList<Double> scores, String eliteCandidate) {
         System.out.println("Generation: " + currGeneration);
         System.out.println("Scored population: ");
@@ -413,6 +433,12 @@ class GeneticAlgorithm {
         return scoredPopulation;
     }
 
+    /**
+     * provides a surrogate evaluation score for the given solution
+     *
+     * @param s the tune to be evaluated
+     * @return the surrogate evaluation value
+     */
     private Double surrogate(String s) {
         double rating = 0.0;
         System.out.println("Playing tune");
@@ -427,6 +453,12 @@ class GeneticAlgorithm {
         return Math.round((Integer.parseInt(input) / 100.0) * (EVALUATION_WEIGHT * 76 + ENTROPY_WEIGHT * 7) * 100.0) / 100.0;
     }
 
+    /**
+     * validates if the value given in the string is an integer
+     *
+     * @param input the input string
+     * @return if the string can be parsed to an integer value
+     */
     private boolean isInteger(String input) {
         try {
             Integer.parseInt(input);
@@ -436,6 +468,12 @@ class GeneticAlgorithm {
         return true;
     }
 
+    /**
+     * music theory tune evaluation
+     *
+     * @param s the tune to evaluate
+     * @return the rating for this tune
+     */
     private double evaluateTune(String s) {
         double fitness = 0;
 
@@ -555,4 +593,5 @@ class GeneticAlgorithm {
 
         return best;
     }
+
 }

@@ -7,11 +7,13 @@ import java.util.Collections;
 public class Result {
     private ArrayList<Double> improvingScores;
     private ArrayList<Double> averageScores;
+    public ArrayList<String> population;
     private double maxScore;
 
-    public Result(ArrayList<Double> improvingScores, ArrayList<Double> averageScores) {
+    public Result(ArrayList<Double> improvingScores, ArrayList<Double> averageScores, ArrayList<String> population) {
         this.improvingScores = improvingScores;
         this.averageScores = averageScores;
+        this.population = population;
     }
 
     public double getMaxScore() {
@@ -30,6 +32,7 @@ public class Result {
         PrintWriter pw = null;
         File improvesFile = new File(filepath + " improves" + ".csv");
         File averagesFile = new File(filepath + " averages" + ".csv");
+        File popFile = new File(filepath + " population" + ".csv");
         System.out.println("printing results");
         try {
             pw = new PrintWriter(improvesFile);
@@ -52,6 +55,19 @@ public class Result {
 
         for (double score : averageScores) {
             pw.write(String.valueOf(score));
+            pw.write(",");
+        }
+        pw.close();
+        pw.flush();
+
+        try {
+            pw = new PrintWriter(popFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        for (String pop : population) {
+            pw.write(String.valueOf(pop));
             pw.write(",");
         }
 
