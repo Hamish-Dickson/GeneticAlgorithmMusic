@@ -39,9 +39,17 @@ class GeneticAlgorithm {
     private int SURROGATE_INTERVAL;
 
     /**
-     * Constructor for the genetic algorithm
+     * constructor for the GA
      *
-     * @param generations the number of generations the algorithm should run for
+     * @param iterations how many repeats
+     * @param generations how many generations per repeat
+     * @param evalWeight weight of technical evaluation
+     * @param entropyWeight weight of distance evaluation
+     * @param crossoverPts number of crossover points
+     * @param mutationStr strength of the mutation
+     * @param mutationPts number of mutations to occur
+     * @param surrogate is this a surrogate assisted test
+     * @param surrogateInterval interval at which to perform surrogate evaluation
      */
     GeneticAlgorithm(int iterations, int generations, double evalWeight, double entropyWeight, int crossoverPts,
                      int mutationStr, int mutationPts, boolean surrogate, int surrogateInterval) {
