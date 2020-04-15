@@ -68,6 +68,7 @@ class GeneticAlgorithm {
      * Starts the genetic algorithm process
      */
     Result start() {
+
         ArrayList<Result> results = new ArrayList<>();
         for (int i = 0; i < iterations; i++) {
 
@@ -79,9 +80,6 @@ class GeneticAlgorithm {
             String eliteCandidate = " ";
             currGeneration = 0;
             while (currGeneration < maxGenerations) {
-                if (SURROGATE && SURROGATE_INTERVAL == currGeneration) {
-                    System.out.println("SURROGATE GENERATION");
-                }
                 Collections.shuffle(population);//shuffle so as parents should not re-pair from last generation.
                 scores = evaluatePopulation(population);
                 improvingScores.add(Collections.max(scores));
@@ -97,10 +95,6 @@ class GeneticAlgorithm {
             }
             results.add(new Result(improvingScores, averageScores, elites));
             //playSolution(population, scores);
-        }
-        for (Result r : results) {
-            System.out.println("improve: " + r.getImprovingScores());
-            System.out.println("avg: " + r.getAverageScores());
         }
         return averageResults(results);
     }
@@ -433,7 +427,6 @@ class GeneticAlgorithm {
             if (population.indexOf(s) == surrogatePos && SURROGATE && (currGeneration + 1) % SURROGATE_INTERVAL == 0 && currGeneration != 0) {
                 scoredPopulation.add(surrogate(s));
             } else {
-                System.out.println(population.indexOf(s));
                 scoredPopulation.add(weightedScore(evaluateTune(s), distance(s)));
             }
         }
@@ -547,7 +540,7 @@ class GeneticAlgorithm {
         for (int i = 0; i < POPULATION_SIZE; i++) {
             population.add(generateSolution());
         }
-        System.out.println(population.toString());
+        //System.out.println(population.toString());
         return population;
     }
 

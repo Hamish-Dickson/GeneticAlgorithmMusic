@@ -3,11 +3,15 @@
  */
 public class Main {
     public static void main(String[] args) {
+        long startTime = System.nanoTime();
         test();
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        System.out.println("Runtime: " + totalTime + " nanoseconds");
     }
 
     private static void test() {
-        int iterations = 1;
+        int iterations = 100;
         int generations = 200;
 
         GeneticAlgorithm ga;
@@ -15,7 +19,7 @@ public class Main {
 
         ga = new GeneticAlgorithm(iterations, generations, 0.8, 0.2, 1, 1, 1, false, 0);
         result = ga.start();
-        result.writeCSV("C:\\Users\\bktzg\\WEKA");
+        result.writeCSV("C:\\Users\\bktzg\\baseline");
 /*
         ga = new GeneticAlgorithm(iterations, generations, 0.8, 0.2, 2, 1, 1, false, 0);
         result = ga.start();

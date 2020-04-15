@@ -32,7 +32,7 @@ public class Result {
         PrintWriter pw = null;
         File improvesFile = new File(filepath + " improves" + ".csv");
         File averagesFile = new File(filepath + " averages" + ".csv");
-        File popFile = new File(filepath + " population" + ".csv");
+        File popFile = new File(    filepath + " population" + ".csv");
         System.out.println("printing results");
         try {
             pw = new PrintWriter(improvesFile);
