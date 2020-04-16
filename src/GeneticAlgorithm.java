@@ -1,5 +1,10 @@
+import org.jfugue.midi.MidiDictionary;
+import org.jfugue.midi.MidiFileManager;
+import org.jfugue.pattern.Pattern;
 import org.jfugue.player.Player;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -41,14 +46,14 @@ class GeneticAlgorithm {
     /**
      * constructor for the GA
      *
-     * @param iterations how many repeats
-     * @param generations how many generations per repeat
-     * @param evalWeight weight of technical evaluation
-     * @param entropyWeight weight of distance evaluation
-     * @param crossoverPts number of crossover points
-     * @param mutationStr strength of the mutation
-     * @param mutationPts number of mutations to occur
-     * @param surrogate is this a surrogate assisted test
+     * @param iterations        how many repeats
+     * @param generations       how many generations per repeat
+     * @param evalWeight        weight of technical evaluation
+     * @param entropyWeight     weight of distance evaluation
+     * @param crossoverPts      number of crossover points
+     * @param mutationStr       strength of the mutation
+     * @param mutationPts       number of mutations to occur
+     * @param surrogate         is this a surrogate assisted test
      * @param surrogateInterval interval at which to perform surrogate evaluation
      */
     GeneticAlgorithm(int iterations, int generations, double evalWeight, double entropyWeight, int crossoverPts,
@@ -95,6 +100,7 @@ class GeneticAlgorithm {
             }
             results.add(new Result(improvingScores, averageScores, elites));
             //playSolution(population, scores);
+            //saveToMidi(population, scores);
         }
         return averageResults(results);
     }
@@ -123,7 +129,7 @@ class GeneticAlgorithm {
             averageAverage.set(i, averageAverage.get(i) / iterations);
         }
 
-        return new Result(averageMaximum, averageAverage, results.get(results.size()-1).population);
+        return new Result(averageMaximum, averageAverage, results.get(results.size() - 1).population);
     }
 
     /**
@@ -143,8 +149,8 @@ class GeneticAlgorithm {
     /**
      * prints out the statistics from the current generations
      *
-     * @param population the population
-     * @param scores the scores of the population
+     * @param population     the population
+     * @param scores         the scores of the population
      * @param eliteCandidate the elite candidate for this population
      */
     private void printGenStats(ArrayList<String> population, ArrayList<Double> scores, String eliteCandidate) {
@@ -573,6 +579,20 @@ class GeneticAlgorithm {
         for (String solution : solutions) {
             Player player = new Player();
             player.play(solution);
+        }
+
+    }
+
+    private void saveToMidi(ArrayList<String> population, ArrayList<Double> scores) {
+        ArrayList<String> solutions = getBest(population, scores);
+
+        for (String sol : solutions) {
+            Pattern pattern = new Pattern(sol);
+            try {
+                MidiFileManager.savePatternToMidi(pattern, new File("C:\\Users\\bktzg\\tunes\\" + sol + weightedScore(evaluateTune(sol), distance(sol)) + ".mid"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
